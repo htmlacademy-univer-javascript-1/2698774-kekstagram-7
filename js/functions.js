@@ -2,9 +2,9 @@
 function checkStringLength(string, maxLength) {
   return string.length <= maxLength;
 }
-console.log(checkStringLength('проверяемая строка', 10));
+//console.log(checkStringLength('проверяемая строка', 10));
+checkStringLength('проверяемая строка', 10);
 
-// Функция для проверки, является ли строка палиндромом
 function isPalindrome(string) {
   const normalizedString = string.replaceAll(' ', '').toLowerCase();
   let reversedString = '';
@@ -13,9 +13,9 @@ function isPalindrome(string) {
   }
   return reversedString === normalizedString;
 }
-console.log(isPalindrome('Лёша на полке клопа нашёл '));
+//console.log(isPalindrome('Лёша на полке клопа нашёл '));
+isPalindrome('Лёша на полке клопа нашёл ');
 
-// Дополнительное задание: Функция извлечения цифр из строки
 function extractNumber(input) {
   const string = input.toString();
   let resultString = '';
@@ -31,4 +31,5 @@ function extractNumber(input) {
   }
   return parseInt(resultString, 10);
 }
-console.log(extractNumber('1 кефир, 0.5 батона')); // 105
+extractNumber('1 кефир, 0.5 батона');
+//console.log(extractNumber('1 кефир, 0.5 батона')); // 105
