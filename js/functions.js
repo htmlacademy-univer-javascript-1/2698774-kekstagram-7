@@ -4,7 +4,7 @@ function checkStringLength(string, maxLength) {
 }
 //console.log(checkStringLength('проверяемая строка', 10));
 checkStringLength('проверяемая строка', 10);
-// Функция для проверки, является ли строка палиндромом
+
 function isPalindrome(string) {
   const normalizedString = string.replaceAll(' ', '').toLowerCase();
   let reversedString = '';
