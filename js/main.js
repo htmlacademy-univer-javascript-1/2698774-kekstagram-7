@@ -57,14 +57,10 @@ const createComment = () => {
   };
 };
 
-function createPhoto(index) {
+const createPhoto = (index) => {
   const id = index + 1;
   const commentsCount = getRandomInteger(0, 30);
-  const comments = [];
-
-  for (let i = 0; i < commentsCount; i++) {
-    comments.push(createComment());
-  }
+  const comments = Array.from({ length: commentsCount }, createComment);
 
   return {
     id: id,
@@ -73,8 +69,8 @@ function createPhoto(index) {
     likes: getRandomInteger(15, 200),
     comments: comments,
   };
-}
+};
 
-const generatePhotos = () => Array.from({ length: PHOTOS_COUNT }, createPhoto);
+const generatePhotos = () => Array.from({ length: PHOTOS_COUNT }, (_, index) => createPhoto(index));
 
-generatePhotos();
+export { generatePhotos };
