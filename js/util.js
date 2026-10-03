@@ -1,3 +1,5 @@
+const isEscapeKey = (evt) => evt.key === 'Escape';
+
 // Функция для генерации случайного целого числа в заданном диапазоне
 const getRandomInteger = (a, b) => {
   const lower = Math.ceil(Math.min(a, b));
@@ -42,5 +44,6 @@ export {
   getRandomArrayElement,
   checkStringLength,
   isPalindrome,
-  extractNumber
+  extractNumber,
+  isEscapeKey
 };
