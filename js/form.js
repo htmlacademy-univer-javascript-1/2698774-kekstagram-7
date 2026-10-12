@@ -1,5 +1,6 @@
 import { initScale, resetScale } from './scale.js';
 import { initEffects, resetEffects } from './effects.js';
+import { sendData } from './api.js';
 
 initScale();
 initEffects();
@@ -14,6 +15,7 @@ const uploadInputNode = document.querySelector('.img-upload__input');
 const cancelBtnNode = document.querySelector('.img-upload__cancel');
 const hashtagsInputNode = document.querySelector('.text__hashtags');
 const commentInputNode = document.querySelector('.text__description');
+const submitButton = formNode.querySelector('.img-upload__submit');
 
 const pristine = new Pristine(formNode, {
   classTo: 'img-upload__field-wrapper',
@@ -84,6 +86,48 @@ const closeForm = () => {
   document.removeEventListener('keydown', onDocumentKeydown);
 };
 
+const removeMessage = (message) => {
+  message.remove();
+};
+
+const showMessage = (templateId, buttonClass, onClose) => {
+  const template = document.querySelector(`#${templateId}`);
+  const message = template.content.cloneNode(true).firstElementChild;
+  const closeButton = message.querySelector(buttonClass);
+  let isClosed = false;
+
+  const closeMessage = () => {
+    if (isClosed) {
+      return;
+    }
+
+    isClosed = true;
+    document.removeEventListener('keydown', onMessageKeydown);
+    document.removeEventListener('click', onMessageOutsideClick);
+    removeMessage(message);
+    onClose();
+  };
+
+  function onMessageKeydown(evt) {
+    if (evt.key === 'Escape') {
+      evt.preventDefault();
+      closeMessage();
+    }
+  }
+
+  function onMessageOutsideClick(evt) {
+    if (evt.target === message) {
+      closeMessage();
+    }
+  }
+
+  closeButton.addEventListener('click', closeMessage);
+  document.addEventListener('keydown', onMessageKeydown);
+  document.addEventListener('click', onMessageOutsideClick);
+
+  document.body.append(message);
+};
+
 function onDocumentKeydown(evt) {
   if (evt.key === 'Escape') {
     evt.preventDefault();
@@ -110,9 +154,31 @@ cancelBtnNode.addEventListener('click', closeForm);
 hashtagsInputNode.addEventListener('keydown', stopKeydownPropagation);
 commentInputNode.addEventListener('keydown', stopKeydownPropagation);
 
+const blockSubmitButton = () => {
+  submitButton.disabled = true;
+  submitButton.textContent = 'Публикуем...';
+};
+
+const unblockSubmitButton = () => {
+  submitButton.disabled = false;
+  submitButton.textContent = 'Опубликовать';
+};
+
 formNode.addEventListener('submit', (evt) => {
+  evt.preventDefault();
   const isValid = pristine.validate();
-  if (!isValid) {
-    evt.preventDefault();
+  if (isValid) {
+    blockSubmitButton();
+    sendData(new FormData(evt.target))
+      .then(() => {
+        closeForm();
+        showMessage('success', '.success__button', () => {});
+      })
+      .catch(() => {
+        showMessage('error', '.error__button', () => {});
+      })
+      .finally(() => {
+        unblockSubmitButton();
+      });
   }
 });
