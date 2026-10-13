@@ -6,6 +6,8 @@ const pictureTemplate = document.querySelector('#picture')
   .querySelector('.picture');
 
 export const renderThumbnails = (pictures) => {
+  picturesContainer.querySelectorAll('.picture').forEach((element) => element.remove());
+
   const fragment = document.createDocumentFragment();
 
   pictures.forEach((picture) => {
