@@ -8,6 +8,7 @@ initEffects();
 const MAX_HASHTAGS = 5;
 const MAX_COMMENT_LENGTH = 140;
 const VALID_HASHTAG_REGEX = /^#[a-zа-яё0-9]{1,19}$/i;
+const FILE_TYPES = ['jpg', 'jpeg', 'png'];
 
 const formNode = document.querySelector('.img-upload__form');
 const overlayNode = document.querySelector('.img-upload__overlay');
@@ -16,6 +17,9 @@ const cancelBtnNode = document.querySelector('.img-upload__cancel');
 const hashtagsInputNode = document.querySelector('.text__hashtags');
 const commentInputNode = document.querySelector('.text__description');
 const submitButton = formNode.querySelector('.img-upload__submit');
+
+const photoPreviewNode = document.querySelector('.img-upload__preview img');
+const effectsPreviewsNodes = document.querySelectorAll('.effects__preview');
 
 const pristine = new Pristine(formNode, {
   classTo: 'img-upload__field-wrapper',
@@ -148,7 +152,22 @@ const stopKeydownPropagation = (evt) => {
   }
 };
 
-uploadInputNode.addEventListener('change', openForm);
+uploadInputNode.addEventListener('change', () => {
+  const file = uploadInputNode.files[0];
+  const fileName = file.name.toLowerCase();
+  const matches = FILE_TYPES.some((it) => fileName.endsWith(it));
+
+  if (matches) {
+    const fileUrl = URL.createObjectURL(file);
+    photoPreviewNode.src = fileUrl;
+    effectsPreviewsNodes.forEach((preview) => {
+      preview.style.backgroundImage = `url(${fileUrl})`;
+    });
+  }
+
+  openForm();
+});
+
 cancelBtnNode.addEventListener('click', closeForm);
 
 hashtagsInputNode.addEventListener('keydown', stopKeydownPropagation);
