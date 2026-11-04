@@ -1,18 +1,18 @@
 import { openBigPicture } from './big-picture.js';
 
-const picturesContainer = document.querySelector('.pictures');
-const pictureTemplate = document.querySelector('#picture')
+const picturesContainerElement = document.querySelector('.pictures');
+const pictureTemplateElement = document.querySelector('#picture')
   .content
   .querySelector('.picture');
 
 export const renderThumbnails = (pictures) => {
-  picturesContainer.querySelectorAll('.picture').forEach((element) => element.remove());
+  picturesContainerElement.querySelectorAll('.picture').forEach((element) => element.remove());
 
   const fragment = document.createDocumentFragment();
 
   pictures.forEach((picture) => {
     const { url, description, likes, comments } = picture;
-    const pictureElement = pictureTemplate.cloneNode(true);
+    const pictureElement = pictureTemplateElement.cloneNode(true);
     const imageElement = pictureElement.querySelector('.picture__img');
     const likesElement = pictureElement.querySelector('.picture__likes');
     const commentsElement = pictureElement.querySelector('.picture__comments');
@@ -22,13 +22,15 @@ export const renderThumbnails = (pictures) => {
     likesElement.textContent = likes;
     commentsElement.textContent = comments.length;
 
-    pictureElement.addEventListener('click', (evt) => {
+    const onThumbnailsClick = (evt) => {
       evt.preventDefault();
       openBigPicture(picture);
-    });
+    };
 
-    fragment.appendChild(pictureElement);
+    pictureElement.addEventListener('click', onThumbnailsClick);
+
+    fragment.append(pictureElement);
   });
 
-  picturesContainer.appendChild(fragment);
+  picturesContainerElement.append(fragment);
 };

@@ -1,13 +1,16 @@
 import { isEscapeKey } from './util.js';
 
 const COMMENTS_PER_PORTION = 5;
+const AVATAR_SIZE = 35;
 
 const bigPictureElement = document.querySelector('.big-picture');
-const bigPictureImgElement = bigPictureElement.querySelector('.big-picture__img img');
+const bigPictureImageElement = bigPictureElement.querySelector('.big-picture__img img');
 const likesCountElement = bigPictureElement.querySelector('.likes-count');
 const socialCaptionElement = bigPictureElement.querySelector('.social__caption');
 const socialCommentsElement = bigPictureElement.querySelector('.social__comments');
 const socialCommentCountElement = bigPictureElement.querySelector('.social__comment-count');
+const socialCommentShownCountElement = socialCommentCountElement.querySelector('.social__comment-shown-count');
+const socialCommentTotalCountElement = socialCommentCountElement.querySelector('.social__comment-total-count');
 const commentsLoaderElement = bigPictureElement.querySelector('.comments-loader');
 const bigPictureCloseElement = bigPictureElement.querySelector('.big-picture__cancel');
 
@@ -22,8 +25,8 @@ const createComment = ({ avatar, name, message }) => {
   avatarElement.classList.add('social__picture');
   avatarElement.src = avatar;
   avatarElement.alt = name;
-  avatarElement.width = 35;
-  avatarElement.height = 35;
+  avatarElement.width = AVATAR_SIZE;
+  avatarElement.height = AVATAR_SIZE;
 
   const textElement = document.createElement('p');
   textElement.classList.add('social__text');
@@ -49,40 +52,43 @@ const renderComments = () => {
     fragment.append(commentElement);
   }
 
-  socialCommentsElement.innerHTML = '';
+  socialCommentsElement.textContent = '';
   socialCommentsElement.append(fragment);
 
-  socialCommentCountElement.innerHTML = `${commentsShown} из <span class="comments-count">${comments.length}</span> комментариев`;
+  socialCommentShownCountElement.textContent = commentsShown;
+  socialCommentTotalCountElement.textContent = comments.length;
 };
 
-const onCommentsLoaderClick = () => {
+function onCommentsLoaderClick() {
   renderComments();
-};
-
-const onDocumentKeydown = (evt) => {
-  if (isEscapeKey(evt)) {
-    evt.preventDefault();
-    closeBigPicture();
-  }
-};
-
-function closeBigPicture() {
-  bigPictureElement.classList.add('hidden');
-  document.body.classList.remove('modal-open');
-  document.removeEventListener('keydown', onDocumentKeydown);
 }
 
-bigPictureCloseElement.addEventListener('click', () => {
-  closeBigPicture();
-});
+function closeBigPicture(onKeydown) {
+  bigPictureElement.classList.add('hidden');
+  document.body.classList.remove('modal-open');
+  document.removeEventListener('keydown', onKeydown);
+  bigPictureCloseElement.removeEventListener('click', onBigPictureCloseClick);
+  commentsLoaderElement.removeEventListener('click', onCommentsLoaderClick);
+}
 
-commentsLoaderElement.addEventListener('click', onCommentsLoaderClick);
+function onDocumentKeydown(evt) {
+  if (isEscapeKey(evt)) {
+    evt.preventDefault();
+    closeBigPicture(onDocumentKeydown);
+  }
+}
+
+function onBigPictureCloseClick() {
+  closeBigPicture(onDocumentKeydown);
+}
 
 export const openBigPicture = (data) => {
   bigPictureElement.classList.remove('hidden');
   document.body.classList.add('modal-open');
   document.addEventListener('keydown', onDocumentKeydown);
-  bigPictureImgElement.src = data.url;
+  bigPictureCloseElement.addEventListener('click', onBigPictureCloseClick);
+  commentsLoaderElement.addEventListener('click', onCommentsLoaderClick);
+  bigPictureImageElement.src = data.url;
   likesCountElement.textContent = data.likes;
   socialCaptionElement.textContent = data.description;
   comments = data.comments;

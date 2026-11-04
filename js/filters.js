@@ -1,4 +1,6 @@
 const PICTURES_COUNT = 10;
+const BUTTON_CLASS = 'img-filters__button';
+const ACTIVE_BUTTON_CLASS = 'img-filters__button--active';
 const Filter = {
   DEFAULT: 'filter-default',
   RANDOM: 'filter-random',
@@ -7,6 +9,7 @@ const Filter = {
 
 const filterElement = document.querySelector('.img-filters');
 let currentFilter = Filter.DEFAULT;
+let activeButtonElement = filterElement.querySelector(`.${ACTIVE_BUTTON_CLASS}`);
 let pictures = [];
 
 const sortRandomly = () => Math.random() - 0.5;
@@ -26,23 +29,24 @@ const getFilteredPictures = () => {
 };
 
 const setOnFilterClick = (callback) => {
-  filterElement.addEventListener('click', (evt) => {
-    if (!evt.target.classList.contains('img-filters__button')) {
+  const onFilterClick = (evt) => {
+    if (!evt.target.classList.contains(BUTTON_CLASS)) {
       return;
     }
 
-    const clickedButton = evt.target;
-    if (clickedButton.id === currentFilter) {
+    const clickedButtonElement = evt.target;
+    if (clickedButtonElement.id === currentFilter) {
       return;
     }
 
-    filterElement
-      .querySelector('.img-filters__button--active')
-      .classList.remove('img-filters__button--active');
-    clickedButton.classList.add('img-filters__button--active');
-    currentFilter = clickedButton.id;
+    activeButtonElement.classList.remove(ACTIVE_BUTTON_CLASS);
+    clickedButtonElement.classList.add(ACTIVE_BUTTON_CLASS);
+    activeButtonElement = clickedButtonElement;
+    currentFilter = clickedButtonElement.id;
     callback(getFilteredPictures());
-  });
+  };
+
+  filterElement.addEventListener('click', onFilterClick);
 };
 
 export const initFilters = (loadedPictures, callback) => {
