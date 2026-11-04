@@ -66,7 +66,7 @@ const onEffectsChange = (evt) => {
 
 sliderElement.noUiSlider.on('update', () => {
   const value = sliderElement.noUiSlider.get();
-  effectLevelValue.value = value;
+  effectLevelValue.value = Number(value).toString();
 
   if (currentEffect === EFFECTS.none) {
     imagePreview.style.filter = 'none';

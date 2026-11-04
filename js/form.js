@@ -1,31 +1,34 @@
 import { initScale, resetScale } from './scale.js';
 import { initEffects, resetEffects } from './effects.js';
 import { sendData } from './api.js';
-
-initScale();
-initEffects();
+import { isEscapeKey } from './util.js';
 
 const MAX_HASHTAGS = 5;
 const MAX_COMMENT_LENGTH = 140;
 const VALID_HASHTAG_REGEX = /^#[a-zа-яё0-9]{1,19}$/i;
 const FILE_TYPES = ['jpg', 'jpeg', 'png'];
 
-const formNode = document.querySelector('.img-upload__form');
-const overlayNode = document.querySelector('.img-upload__overlay');
-const uploadInputNode = document.querySelector('.img-upload__input');
-const cancelBtnNode = document.querySelector('.img-upload__cancel');
-const hashtagsInputNode = document.querySelector('.text__hashtags');
-const commentInputNode = document.querySelector('.text__description');
-const submitButton = formNode.querySelector('.img-upload__submit');
+const formElement = document.querySelector('.img-upload__form');
+const overlayElement = document.querySelector('.img-upload__overlay');
+const uploadInputElement = document.querySelector('.img-upload__input');
+const cancelButtonElement = document.querySelector('.img-upload__cancel');
+const hashtagsInputElement = document.querySelector('.text__hashtags');
+const commentInputElement = document.querySelector('.text__description');
+const submitButton = formElement.querySelector('.img-upload__submit');
 
-const photoPreviewNode = document.querySelector('.img-upload__preview img');
-const effectsPreviewsNodes = document.querySelectorAll('.effects__preview');
+const photoPreviewElement = document.querySelector('.img-upload__preview img');
+const effectsPreviewsElements = document.querySelectorAll('.effects__preview');
 
-const pristine = new Pristine(formNode, {
+const pristine = new Pristine(formElement, {
   classTo: 'img-upload__field-wrapper',
   errorTextParent: 'img-upload__field-wrapper',
   errorTextClass: 'img-upload__field-wrapper--error',
 });
+
+let messageElement = null;
+
+initScale();
+initEffects();
 
 const parseHashtags = (value) =>
   value
@@ -54,124 +57,155 @@ const validateHashtagsUniqueness = (value) => {
 const validateCommentLength = (value) => value.length <= MAX_COMMENT_LENGTH;
 
 pristine.addValidator(
-  hashtagsInputNode,
+  hashtagsInputElement,
   validateHashtagsFormat,
   'Хэштег должен начинаться с # и содержать только буквы и цифры (от 2 до 20 символов)'
 );
 
 pristine.addValidator(
-  hashtagsInputNode,
+  hashtagsInputElement,
   validateHashtagsCount,
   `Нельзя указать больше ${MAX_HASHTAGS} хэштегов`
 );
 
 pristine.addValidator(
-  hashtagsInputNode,
+  hashtagsInputElement,
   validateHashtagsUniqueness,
   'Хэштеги не должны повторяться'
 );
 
 pristine.addValidator(
-  commentInputNode,
+  commentInputElement,
   validateCommentLength,
   `Длина комментария не может превышать ${MAX_COMMENT_LENGTH} символов`
 );
 
-const closeForm = () => {
-  overlayNode.classList.add('hidden');
+const closeForm = (keydownHandler) => {
+  overlayElement.classList.add('hidden');
   document.body.classList.remove('modal-open');
 
-  formNode.reset();
+  formElement.reset();
   pristine.reset();
 
   resetScale();
   resetEffects();
 
-  document.removeEventListener('keydown', onDocumentKeydown);
+  document.removeEventListener('keydown', keydownHandler);
 };
 
 const removeMessage = (message) => {
   message.remove();
 };
 
-const showMessage = (templateId, buttonClass, onClose) => {
+const createMessage = (templateId, buttonClass) => {
   const template = document.querySelector(`#${templateId}`);
   const message = template.content.cloneNode(true).firstElementChild;
   const closeButton = message.querySelector(buttonClass);
-  let isClosed = false;
+  return { message, closeButton };
+};
 
-  const closeMessage = () => {
+const setMessageHandlers = (message, closeButton, onClose) => {
+  let isClosed = false;
+  let onMessageKeydown = () => {};
+  let onMessageOutsideClick = () => {};
+
+  const closeMessage = (keydownHandler, outsideClickHandler) => {
     if (isClosed) {
       return;
     }
 
     isClosed = true;
-    document.removeEventListener('keydown', onMessageKeydown);
-    document.removeEventListener('click', onMessageOutsideClick);
+    document.removeEventListener('keydown', keydownHandler);
+    document.removeEventListener('click', outsideClickHandler);
     removeMessage(message);
+    messageElement = null;
     onClose();
   };
 
-  function onMessageKeydown(evt) {
-    if (evt.key === 'Escape') {
+  onMessageKeydown = (evt) => {
+    if (isEscapeKey(evt)) {
       evt.preventDefault();
-      closeMessage();
+      closeMessage(onMessageKeydown, onMessageOutsideClick);
     }
-  }
+  };
 
-  function onMessageOutsideClick(evt) {
+  onMessageOutsideClick = (evt) => {
     if (evt.target === message) {
-      closeMessage();
+      closeMessage(onMessageKeydown, onMessageOutsideClick);
     }
-  }
+  };
 
-  closeButton.addEventListener('click', closeMessage);
+  const onMessageCloseClick = () => {
+    closeMessage(onMessageKeydown, onMessageOutsideClick);
+  };
+
+  closeButton.addEventListener('click', onMessageCloseClick);
   document.addEventListener('keydown', onMessageKeydown);
   document.addEventListener('click', onMessageOutsideClick);
-
-  document.body.append(message);
 };
 
-function onDocumentKeydown(evt) {
-  if (evt.key === 'Escape') {
+const showMessage = (templateId, buttonClass, onClose) => {
+  const message = createMessage(templateId, buttonClass);
+  messageElement = message.message;
+  setMessageHandlers(message.message, message.closeButton, onClose);
+  document.body.append(message.message);
+};
+
+const onDocumentKeydown = (evt) => {
+  if (isEscapeKey(evt)) {
     evt.preventDefault();
-    closeForm();
+    if (messageElement) {
+      return;
+    }
+    closeForm(onDocumentKeydown);
   }
-}
+};
 
 const openForm = () => {
-  overlayNode.classList.remove('hidden');
+  overlayElement.classList.remove('hidden');
   document.body.classList.add('modal-open');
 
+  resetScale();
+  resetEffects();
   document.addEventListener('keydown', onDocumentKeydown);
 };
 
 const stopKeydownPropagation = (evt) => {
-  if (evt.key === 'Escape') {
+  if (isEscapeKey(evt)) {
     evt.stopPropagation();
   }
 };
 
-uploadInputNode.addEventListener('change', () => {
-  const file = uploadInputNode.files[0];
+const onUploadInputChange = () => {
+  const file = uploadInputElement.files[0];
+  if (!file) {
+    return;
+  }
+
   const fileName = file.name.toLowerCase();
-  const matches = FILE_TYPES.some((it) => fileName.endsWith(it));
+  const matches = FILE_TYPES.some((fileType) => fileName.endsWith(fileType));
 
   if (matches) {
     const fileUrl = URL.createObjectURL(file);
-    photoPreviewNode.src = fileUrl;
-    effectsPreviewsNodes.forEach((preview) => {
+    photoPreviewElement.src = fileUrl;
+    effectsPreviewsElements.forEach((preview) => {
       preview.style.backgroundImage = `url(${fileUrl})`;
     });
   }
 
   openForm();
-});
+};
 
-cancelBtnNode.addEventListener('click', closeForm);
+uploadInputElement.addEventListener('change', onUploadInputChange);
 
-hashtagsInputNode.addEventListener('keydown', stopKeydownPropagation);
-commentInputNode.addEventListener('keydown', stopKeydownPropagation);
+const onCancelButtonClick = () => {
+  closeForm(onDocumentKeydown);
+};
+
+cancelButtonElement.addEventListener('click', onCancelButtonClick);
+
+hashtagsInputElement.addEventListener('keydown', stopKeydownPropagation);
+commentInputElement.addEventListener('keydown', stopKeydownPropagation);
 
 const blockSubmitButton = () => {
   submitButton.disabled = true;
@@ -183,14 +217,14 @@ const unblockSubmitButton = () => {
   submitButton.textContent = 'Опубликовать';
 };
 
-formNode.addEventListener('submit', (evt) => {
+const onFormSubmit = (evt) => {
   evt.preventDefault();
   const isValid = pristine.validate();
   if (isValid) {
     blockSubmitButton();
     sendData(new FormData(evt.target))
       .then(() => {
-        closeForm();
+        closeForm(onDocumentKeydown);
         showMessage('success', '.success__button', () => {});
       })
       .catch(() => {
@@ -200,4 +234,6 @@ formNode.addEventListener('submit', (evt) => {
         unblockSubmitButton();
       });
   }
-});
+};
+
+formElement.addEventListener('submit', onFormSubmit);

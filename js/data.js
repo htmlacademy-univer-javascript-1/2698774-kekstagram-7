@@ -29,6 +29,10 @@ const DESCRIPTIONS = [
 ];
 
 const PHOTOS_COUNT = 25;
+const MAX_COMMENTS_COUNT = 30;
+const MIN_LIKES_COUNT = 15;
+const MAX_LIKES_COUNT = 200;
+const AVATARS_COUNT = 6;
 
 let commentId = 1;
 
@@ -42,7 +46,7 @@ const createComment = () => {
 
   return {
     id: commentId++,
-    avatar: `img/avatar-${getRandomInteger(1, 6)}.svg`,
+    avatar: `img/avatar-${getRandomInteger(1, AVATARS_COUNT)}.svg`,
     message: message,
     name: getRandomArrayElement(NAMES),
   };
@@ -50,14 +54,14 @@ const createComment = () => {
 
 const createPhoto = (index) => {
   const id = index + 1;
-  const commentsCount = getRandomInteger(0, 30);
+  const commentsCount = getRandomInteger(0, MAX_COMMENTS_COUNT);
   const comments = Array.from({ length: commentsCount }, createComment);
 
   return {
     id: id,
     url: `photos/${id}.jpg`,
     description: getRandomArrayElement(DESCRIPTIONS),
-    likes: getRandomInteger(15, 200),
+    likes: getRandomInteger(MIN_LIKES_COUNT, MAX_LIKES_COUNT),
     comments: comments,
   };
 };

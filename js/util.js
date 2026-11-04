@@ -1,9 +1,11 @@
+const ALERT_SHOW_TIME = 5000;
+
 const isEscapeKey = (evt) => evt.key === 'Escape';
 
 // Функция для генерации случайного целого числа в заданном диапазоне
-const getRandomInteger = (a, b) => {
-  const lower = Math.ceil(Math.min(a, b));
-  const upper = Math.floor(Math.max(a, b));
+const getRandomInteger = (lowerNumber, upperNumber) => {
+  const lower = Math.ceil(Math.min(lowerNumber, upperNumber));
+  const upper = Math.floor(Math.max(lowerNumber, upperNumber));
   const result = Math.random() * (upper - lower + 1) + lower;
   return Math.floor(result);
 };
@@ -39,10 +41,9 @@ const extractNumber = (input) => {
   return parseInt(resultString, 10);
 };
 
-const ALERT_SHOW_TIME = 5000;
-
 const showAlert = (message) => {
   const alertContainer = document.createElement('div');
+  alertContainer.className = 'data-error';
   alertContainer.style.zIndex = '100';
   alertContainer.style.position = 'absolute';
   alertContainer.style.left = '0';

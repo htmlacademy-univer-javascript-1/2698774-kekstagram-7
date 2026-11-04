@@ -22,10 +22,12 @@ export const renderThumbnails = (pictures) => {
     likesElement.textContent = likes;
     commentsElement.textContent = comments.length;
 
-    pictureElement.addEventListener('click', (evt) => {
+    const onThumbnailsClick = (evt) => {
       evt.preventDefault();
       openBigPicture(picture);
-    });
+    };
+
+    pictureElement.addEventListener('click', onThumbnailsClick);
 
     fragment.appendChild(pictureElement);
   });

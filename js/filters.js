@@ -26,7 +26,7 @@ const getFilteredPictures = () => {
 };
 
 const setOnFilterClick = (callback) => {
-  filterElement.addEventListener('click', (evt) => {
+  const onFilterClick = (evt) => {
     if (!evt.target.classList.contains('img-filters__button')) {
       return;
     }
@@ -42,7 +42,9 @@ const setOnFilterClick = (callback) => {
     clickedButton.classList.add('img-filters__button--active');
     currentFilter = clickedButton.id;
     callback(getFilteredPictures());
-  });
+  };
+
+  filterElement.addEventListener('click', onFilterClick);
 };
 
 export const initFilters = (loadedPictures, callback) => {
