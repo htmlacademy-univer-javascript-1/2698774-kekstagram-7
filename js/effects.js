@@ -1,5 +1,12 @@
+const NONE_EFFECT = 'none';
+const HIDDEN_CLASS = 'hidden';
+const EFFECT_PREVIEW_CLASS = 'effects__preview--';
+const EFFECT_RADIO_CLASS = 'effects__radio';
+const NO_FILTER = 'none';
+const FILTER_VALUE_SUFFIX = ')';
+
 const EFFECTS = {
-  none: { filter: 'none', min: 0, max: 100, step: 1, unit: '' },
+  none: { filter: NO_FILTER, min: 0, max: 100, step: 1, unit: '' },
   chrome: { filter: 'grayscale', min: 0, max: 1, step: 0.1, unit: '' },
   sepia: { filter: 'sepia', min: 0, max: 1, step: 0.1, unit: '' },
   marvin: { filter: 'invert', min: 0, max: 100, step: 1, unit: '%' },
@@ -8,13 +15,14 @@ const EFFECTS = {
 };
 
 const modalElement = document.querySelector('.img-upload__overlay');
-const imagePreview = modalElement.querySelector('.img-upload__preview img');
-const sliderContainer = modalElement.querySelector('.img-upload__effect-level');
+const imagePreviewElement = modalElement.querySelector('.img-upload__preview img');
+const sliderContainerElement = modalElement.querySelector('.img-upload__effect-level');
 const sliderElement = modalElement.querySelector('.effect-level__slider');
-const effectLevelValue = modalElement.querySelector('.effect-level__value');
-const effectsList = modalElement.querySelector('.effects__list');
+const effectLevelValueElement = modalElement.querySelector('.effect-level__value');
+const effectsListElement = modalElement.querySelector('.effects__list');
 
-let currentEffect = EFFECTS.none;
+let currentEffect = EFFECTS[NONE_EFFECT];
+let currentEffectClass = '';
 
 noUiSlider.create(sliderElement, {
   range: { min: 0, max: 100 },
@@ -24,11 +32,11 @@ noUiSlider.create(sliderElement, {
 });
 
 const hideSlider = () => {
-  sliderContainer.classList.add('hidden');
+  sliderContainerElement.classList.add(HIDDEN_CLASS);
 };
 
 const showSlider = () => {
-  sliderContainer.classList.remove('hidden');
+  sliderContainerElement.classList.remove(HIDDEN_CLASS);
 };
 
 const updateSliderOptions = (effect) => {
@@ -40,23 +48,30 @@ const updateSliderOptions = (effect) => {
 };
 
 export const resetEffects = () => {
-  currentEffect = EFFECTS.none;
-  imagePreview.style.filter = 'none';
-  imagePreview.className = '';
+  currentEffect = EFFECTS[NONE_EFFECT];
+  imagePreviewElement.style.filter = NO_FILTER;
+  if (currentEffectClass) {
+    imagePreviewElement.classList.remove(currentEffectClass);
+    currentEffectClass = '';
+  }
   hideSlider();
 };
 
 const onEffectsChange = (evt) => {
-  if (!evt.target.classList.contains('effects__radio')) {
+  if (!evt.target.classList.contains(EFFECT_RADIO_CLASS)) {
     return;
   }
 
   const effectName = evt.target.value;
-  currentEffect = EFFECTS[effectName] || EFFECTS.none;
+  currentEffect = EFFECTS[effectName] || EFFECTS[NONE_EFFECT];
 
-  imagePreview.className = `effects__preview--${effectName}`;
+  if (currentEffectClass) {
+    imagePreviewElement.classList.remove(currentEffectClass);
+  }
+  currentEffectClass = `${EFFECT_PREVIEW_CLASS}${effectName}`;
+  imagePreviewElement.classList.add(currentEffectClass);
 
-  if (effectName === 'none') {
+  if (effectName === NONE_EFFECT) {
     resetEffects();
   } else {
     showSlider();
@@ -66,16 +81,15 @@ const onEffectsChange = (evt) => {
 
 sliderElement.noUiSlider.on('update', () => {
   const value = sliderElement.noUiSlider.get();
-  effectLevelValue.value = Number(value).toString();
+  effectLevelValueElement.value = Number(value).toString();
 
-  if (currentEffect === EFFECTS.none) {
-    imagePreview.style.filter = 'none';
-  } else {
-    imagePreview.style.filter = `${currentEffect.filter}(${value}${currentEffect.unit})`;
-  }
+  imagePreviewElement.style.filter =
+    currentEffect === EFFECTS[NONE_EFFECT]
+      ? NO_FILTER
+      : `${currentEffect.filter}(${value}${currentEffect.unit}${FILTER_VALUE_SUFFIX}`;
 });
 
 export const initEffects = () => {
-  effectsList.addEventListener('change', onEffectsChange);
+  effectsListElement.addEventListener('change', onEffectsChange);
   resetEffects();
 };

@@ -4,7 +4,7 @@ const COMMENTS_PER_PORTION = 5;
 const AVATAR_SIZE = 35;
 
 const bigPictureElement = document.querySelector('.big-picture');
-const bigPictureImgElement = bigPictureElement.querySelector('.big-picture__img img');
+const bigPictureImageElement = bigPictureElement.querySelector('.big-picture__img img');
 const likesCountElement = bigPictureElement.querySelector('.likes-count');
 const socialCaptionElement = bigPictureElement.querySelector('.social__caption');
 const socialCommentsElement = bigPictureElement.querySelector('.social__comments');
@@ -52,43 +52,43 @@ const renderComments = () => {
     fragment.append(commentElement);
   }
 
-  socialCommentsElement.innerHTML = '';
+  socialCommentsElement.textContent = '';
   socialCommentsElement.append(fragment);
 
   socialCommentShownCountElement.textContent = commentsShown;
   socialCommentTotalCountElement.textContent = comments.length;
 };
 
-const onCommentsLoaderClick = () => {
+function onCommentsLoaderClick() {
   renderComments();
-};
+}
 
-const closeBigPicture = (keydownHandler) => {
+function closeBigPicture(onKeydown) {
   bigPictureElement.classList.add('hidden');
   document.body.classList.remove('modal-open');
-  document.removeEventListener('keydown', keydownHandler);
-};
+  document.removeEventListener('keydown', onKeydown);
+  bigPictureCloseElement.removeEventListener('click', onBigPictureCloseClick);
+  commentsLoaderElement.removeEventListener('click', onCommentsLoaderClick);
+}
 
-const onDocumentKeydown = (evt) => {
+function onDocumentKeydown(evt) {
   if (isEscapeKey(evt)) {
     evt.preventDefault();
     closeBigPicture(onDocumentKeydown);
   }
-};
+}
 
-const onBigPictureCloseClick = () => {
+function onBigPictureCloseClick() {
   closeBigPicture(onDocumentKeydown);
-};
-
-bigPictureCloseElement.addEventListener('click', onBigPictureCloseClick);
-
-commentsLoaderElement.addEventListener('click', onCommentsLoaderClick);
+}
 
 export const openBigPicture = (data) => {
   bigPictureElement.classList.remove('hidden');
   document.body.classList.add('modal-open');
   document.addEventListener('keydown', onDocumentKeydown);
-  bigPictureImgElement.src = data.url;
+  bigPictureCloseElement.addEventListener('click', onBigPictureCloseClick);
+  commentsLoaderElement.addEventListener('click', onCommentsLoaderClick);
+  bigPictureImageElement.src = data.url;
   likesCountElement.textContent = data.likes;
   socialCaptionElement.textContent = data.description;
   comments = data.comments;
